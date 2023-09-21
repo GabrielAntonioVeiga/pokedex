@@ -83,7 +83,6 @@ export function NavBar() {
       <Container>
         <ContainerStyledSelect>
           <select onChange={onChangeSelectHandler} value={defaultValue}>
-            {/* <optgroup label="selecione uma categoria"></optgroup> */}
             <option value="" hidden disabled>
               selecione uma categoria
             </option>
@@ -92,7 +91,6 @@ export function NavBar() {
                 {option}
               </option>
             ))}
-            {/* </optgroup> */}
           </select>
         </ContainerStyledSelect>
 
@@ -127,12 +125,6 @@ export function NavBar() {
             alt="pokeball--v1"
             onClick={showFavorites}
           />
-          {/* <img
-            src="https://icons8.com/icon/63311/pokeball"
-            height={48}
-            width={48}
-            onClick={showFavorites}
-          /> */}
         </ContainerFavorites>
       </Container>
     </>

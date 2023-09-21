@@ -66,20 +66,10 @@ export default function Pokemon(props: { pokemon: PokemonsProperties; type?: Pok
   const getEvoluitonChain = async () => {
     try {
       setEvo(true)
-      // setPokemonEvolution(props.pokemon.name)
-      // setCategory('')
-      // setSearchValue('')
-      // setPage(0)
-      // getPokemons()
       setLoading(true)
       const response = await fetch(
         `https://pokeapi.co/api/v2/pokemon-species/${props.pokemon.name}/`
       )
-      if (response.status >= 400 && response.status <= 500) {
-        // alert('Nao existe evolucao para este Pokemon!')
-        resetPokemons()
-        return
-      }
       const data = await response.json()
       const evolutionChain = await fetch(data.evolution_chain.url)
       const evolutionChainData = await evolutionChain.json()
@@ -95,13 +85,6 @@ export default function Pokemon(props: { pokemon: PokemonsProperties; type?: Pok
         }
       }
 
-      // evolutionChainPokemon.push(evolutionChainData.chain.evolves_to[0].species.name)
-      // evolutionChainPokemon.push(evolutionChainData.chain.evolves_to[0].evolves_to[0].species.name)
-
-      // evolutionChainPokemon.forEach((pokemon) => {
-      //   return fetch(`https://pokeapi.co/api/v2/pokemon/${pokemon}/`)
-      // })
-
       const pokemonsData = evolutionChainPokemon.map((name) => {
         return getPokemonURL(`https://pokeapi.co/api/v2/pokemon/${name}/`)
       })
@@ -112,13 +95,13 @@ export default function Pokemon(props: { pokemon: PokemonsProperties; type?: Pok
 
       setPokemons(results)
       setEvo(true)
-      // setPage(0)
 
       evolutionChainPokemon.length = 0
       await new Promise((resolve) => setTimeout(resolve, 1000))
       setLoading(false)
       setEvo(false)
     } catch {
+      resetPokemons()
     } finally {
       setLoading(false)
     }

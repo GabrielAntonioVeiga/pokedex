@@ -13,7 +13,6 @@ interface PokemonsProperties {
 type PokemonsContextType = {
   setPokemons: Dispatch<SetStateAction<PokemonsProperties[]>>
   setLoading: Dispatch<SetStateAction<boolean>>
-  // setIndexPokemon: Dispatch<SetStateAction<number>>
   setIndexInicial: Dispatch<SetStateAction<number>>
   setIndexFinal: Dispatch<SetStateAction<number>>
 
@@ -45,17 +44,6 @@ type PokemonsContextType = {
   setDefaultValue: Dispatch<SetStateAction<string>>
 }
 
-// getPokemons,
-// page,
-// setPage,
-// indexPokemon,
-// loading,
-// category,
-// setCategory,
-// pokemons,
-// indexInicial,
-// indexFinal
-
 export const PokemonContext = createContext({} as PokemonsContextType)
 
 export const PokemonsContextProvider = (props: PropsWithChildren) => {
@@ -81,108 +69,53 @@ export const PokemonsContextProvider = (props: PropsWithChildren) => {
     setIndexPokemon(page * limit)
 
     setLoading(true)
-
-    // if (evo) {
-    //   try {
-
-    //     const response = await fetch(
-    //       `https://pokeapi.co/api/v2/pokemon-species/${pokemonEvolution}/`
-    //     )
-    //     const data = await response.json()
-    //     const evolutionChain = await fetch(data.evolution_chain.url)
-    //     const evolutionChainData = await evolutionChain.json()
-
-    //     evolutionChainPokemon.push(evolutionChainData.chain.species.name)
-
-    //     for (let i = 0; i < evolutionChainData.chain.evolves_to.length; i++) {
-    //       evolutionChainPokemon.push(evolutionChainData.chain.evolves_to[i].species.name)
-    //       for (let j = 0; j < evolutionChainData.chain.evolves_to[i].evolves_to.length; j++) {
-    //         evolutionChainPokemon.push(
-    //           evolutionChainData.chain.evolves_to[i].evolves_to[j].species.name
-    //         )
-    //       }
-    //     }
-
-    //     // evolutionChainPokemon.push(evolutionChainData.chain.evolves_to[0].species.name)
-    //     // evolutionChainPokemon.push(evolutionChainData.chain.evolves_to[0].evolves_to[0].species.name)
-
-    //     evolutionChainPokemon.forEach((pokemon) => {
-    //       return fetch(`https://pokeapi.co/api/v2/pokemon/${pokemon}/`)
-    //     })
-
-    //     const pokemonsData = evolutionChainPokemon.map((name) => {
-    //       return getPokemonURL(`https://pokeapi.co/api/v2/pokemon/${name}/`)
-    //     })
-
-    //     const results = await Promise.all(pokemonsData)
-    //     setPokemons(results)
-
-    //     evolutionChainPokemon.length = 0
-    //     setEvo(false)
-    //   } catch {
-    //   } finally {
-    //   }
-    // } else
-
     if (evo) {
       return
     }
     if (category) {
-      try {
-        const request = await fetch(`https://pokeapi.co/api/v2/type/${category}`)
-        const data = await request.json()
+      const request = await fetch(`https://pokeapi.co/api/v2/type/${category}`)
+      const data = await request.json()
 
-        const pokemonsData = data.pokemon.map(async (pokemon: { pokemon: { url: string } }) => {
-          return await getPokemonURL(pokemon.pokemon.url)
+      const pokemonsData = data.pokemon.map(async (pokemon: { pokemon: { url: string } }) => {
+        return await getPokemonURL(pokemon.pokemon.url)
+      })
+
+      const results = await Promise.all(pokemonsData)
+
+      setPokemons(results)
+      setIndexInicial(page * 18)
+      setIndexFinal((page + 1) * 18)
+    } else if (debouncedChange && debouncedChange.length > 2) {
+      const request = await fetch(`https://pokeapi.co/api/v2/pokemon?limit=10000&offset=0`)
+      const data = await request.json()
+
+      const pokemonsData = data.results
+        .filter((pokemon: { name: any[] }) => pokemon.name.includes(debouncedChange))
+        .map(async (pokemon: { url: string }) => {
+          return await getPokemonURL(pokemon.url)
         })
 
-        const results = await Promise.all(pokemonsData)
+      const results = await Promise.all(pokemonsData)
 
-        setPokemons(results)
-        setIndexInicial(page * 18)
-        setIndexFinal((page + 1) * 18)
-      } catch {
-      } finally {
-      }
-    } else if (debouncedChange && debouncedChange.length > 2) {
-      try {
-        const request = await fetch(`https://pokeapi.co/api/v2/pokemon?limit=10000&offset=0`)
-        const data = await request.json()
-
-        const pokemonsData = data.results
-          .filter((pokemon: { name: any[] }) => pokemon.name.includes(debouncedChange))
-          .map(async (pokemon: { url: string }) => {
-            return await getPokemonURL(pokemon.url)
-          })
-
-        const results = await Promise.all(pokemonsData)
-
-        setPokemons(results)
-        setIndexInicial(page * 18)
-        setIndexFinal((page + 1) * 18)
-      } catch {
-      } finally {
-      }
+      setPokemons(results)
+      setIndexInicial(page * 18)
+      setIndexFinal((page + 1) * 18)
     } else {
-      try {
-        const request = await fetch(
-          `https://pokeapi.co/api/v2/pokemon?limit=${limit}&offset=${indexPokemon}`
-        )
-        const data = await request.json()
+      const request = await fetch(
+        `https://pokeapi.co/api/v2/pokemon?limit=${limit}&offset=${indexPokemon}`
+      )
+      const data = await request.json()
 
-        const pokemonsData: PokemonsProperties[] = data.results.map(
-          async (pokemon: { url: string }) => {
-            return await getPokemonURL(pokemon.url)
-          }
-        )
+      const pokemonsData: PokemonsProperties[] = data.results.map(
+        async (pokemon: { url: string }) => {
+          return await getPokemonURL(pokemon.url)
+        }
+      )
 
-        const results = await Promise.all(pokemonsData)
-        setIndexInicial(0)
-        setIndexFinal(18)
-        setPokemons(results)
-      } catch {
-      } finally {
-      }
+      const results = await Promise.all(pokemonsData)
+      setIndexInicial(0)
+      setIndexFinal(18)
+      setPokemons(results)
     }
     await new Promise((resolve) => setTimeout(resolve, 1000))
     setLoading(false)
@@ -191,15 +124,12 @@ export const PokemonsContextProvider = (props: PropsWithChildren) => {
   const [defaultValue, setDefaultValue] = useState<string>('')
 
   function resetPokemons() {
+    setPage(0)
     setCategory('')
     setDefaultValue('')
     setSearchValue('')
     setEvo(false)
-    setPage(0)
     getPokemons()
-    // setEvo(false)
-    // setIndexInicial(0)
-    // setIndexFinal(18)
   }
 
   const store = () => {
@@ -249,6 +179,7 @@ export const PokemonsContextProvider = (props: PropsWithChildren) => {
         setPage,
         indexPokemon,
         loading,
+        setLoading,
         category,
         setCategory,
         pokemons,
@@ -267,7 +198,6 @@ export const PokemonsContextProvider = (props: PropsWithChildren) => {
         store,
         evolutionChainPokemon,
         setEvolutionChainPokemon,
-        setLoading,
         evo,
         setEvo,
         pokemonEvolution,
